@@ -1,6 +1,5 @@
 # Homework 6
 
-
 ## Academic Honesty
 **Important note for programming assignments**: As per course policies in the syllabus,
 the following rules apply (check syllabus for the complete list):

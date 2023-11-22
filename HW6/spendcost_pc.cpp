@@ -11,7 +11,7 @@ Title: CS 477 HW 6
 
 
 using namespace std;
-#define OUT_FILE "spendcost_pb_out.txt"
+#define OUT_FILE "spendcost_pc_out.txt"
 
 //Classes
 class TestSet {
@@ -25,26 +25,26 @@ public:
     : aSal(newASal), bSal(newBSal), n(newN), F(newF), Da(newDa), Db(newDb) {}
 
     friend std::ostream& operator<<(std::ostream& os, const TestSet& data) {
-        os << "aSal: ";
+        os << endl << "aSal: ";
         for (int i = 0; i < 4; ++i) {
             os << data.aSal[i] << " ";
         }
 
-        os << "\nbSal: ";
+        os << endl << "bSal: ";
         for (int i = 0; i < 4; ++i) {
             os << data.bSal[i] << " ";
         }
 
-        os << "\nF: " << data.F << " Da: " << data.Da << " Db: " << data.Db << "\n";
+        os << endl << "F: " << data.F << " Da: " << data.Da << " Db: " << data.Db << endl;
 
         return os;
     }
 };
 
 // Function Prototypes
-int findLowestCost(int optSols[][2], int*, int*, int, int, int, int);
+int findLowestCost(int optSols[][2], int optChoices[][2], int*, int*, int, int, int, int);
 void findLowestCost(TestSet);
-void writeTableToFile(int optSols[][2], int, int);
+void writeTableToFile(int choicesMade[][2], int);
 
 //Main Loop
 int main() {
@@ -63,8 +63,8 @@ int main() {
     return 0;
 }
 
-
-int findLowestCost(int optSols[][2], int* aSals, int* bSals, int n, int F, int Da, int Db){
+// Dynamic programming implimentation. 
+int findLowestCost(int optSols[][2], int optChoices[][2], int* aSals, int* bSals, int n, int F, int Da, int Db){
     // Fill the starting values into the table.
     optSols[0][0] = aSals[0];
     optSols[0][1] = bSals[0];
@@ -76,19 +76,22 @@ int findLowestCost(int optSols[][2], int* aSals, int* bSals, int n, int F, int D
         int atAPrevDayAtB = optSols[i-1][1] + F + aSals[i];
         if (atAPrevDayAtA <= atAPrevDayAtB){ // If it was better to be at A the previous day
             optSols[i][0] = atAPrevDayAtA;
-        }
-        else { // If it was better to be at B the previous day
+            optChoices[i][0] = -1;
+        } else { // If it was better to be at B the previous day
             optSols[i][0] = atAPrevDayAtB;
+            optChoices[i][0] = 1;
         }
         
         // Determine the next val for optSols[B] (Current state is B)
         int atBPrevDayAtA = optSols[i-1][0] + F + bSals[i];
         int atBPrevDayAtB = optSols[i-1][1] - Db  + bSals[i];
+
         if (atBPrevDayAtA <= atBPrevDayAtB){ // If it was better to be at A the previous day
             optSols[i][1] = atBPrevDayAtA;
-        }
-        else { // If it was better to be at B the previous day
+            optChoices[i][1] = -1;
+        } else { // If it was better to be at B the previous day
             optSols[i][1] = atBPrevDayAtB;
+            optChoices[i][1] = 1;
         }
     }
 
@@ -105,14 +108,15 @@ int findLowestCost(int optSols[][2], int* aSals, int* bSals, int n, int F, int D
 // Wrapper func for find lowest cost, creates the table and calls the func with a test case.
 void findLowestCost(TestSet test){
     int optSols [test.n][2];
-    int lowestCost = findLowestCost(optSols, test.aSal, test.bSal, test.n, test.F, test.Da, test.Db);
-    writeTableToFile(optSols, test.n, lowestCost);
+    int choiceMade [test.n][2]; // Stores which choice is made by the Algorithm. A=-1,B=1.
+    int lowestCost = findLowestCost(optSols, choiceMade, test.aSal, test.bSal, test.n, test.F, test.Da, test.Db);
+    writeTableToFile(choiceMade, test.n);
     cout << "Lowest Cost: " << lowestCost << endl;
 }
 
 
 // Writes the output table
-void writeTableToFile(int optSols[][2], int n, int lowestCost) {
+void writeTableToFile(int choiceMade[][2], int n) {
     ofstream outputFile(OUT_FILE);
 
     if (!outputFile.is_open()) {
@@ -122,14 +126,22 @@ void writeTableToFile(int optSols[][2], int n, int lowestCost) {
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < 2; ++j) {
-            outputFile << optSols[i][j];
-            if (j < 2 - 1) {
+            char outChar;
+            if (choiceMade[i][j] == -1) {
+                outChar = 'A';
+            } else if (choiceMade[i][j] == 1){
+                outChar = 'B';
+            } else {
+                outChar = '-';
+            }
+
+            outputFile << outChar;
+            if (j < 1) {
                 outputFile << "  |  ";
             }
         }
         outputFile << endl;
     }
-    outputFile << endl << endl << "Lowest/most optimal cost: " << lowestCost << endl;
     outputFile.close();
 }
 
