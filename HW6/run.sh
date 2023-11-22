@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-numProblems=2
+numProblems=3
 
 run_problem(){
     prob_num=$1
@@ -14,6 +14,11 @@ run_problem(){
         g++ -o spendcost_partc spendcost_pc.cpp
         ./spendcost_partc
         rm spendcost_partc
+    fi
+    if [ $prob_num -eq 3 ]; then
+        g++ -o spendcost_partd spendcost_pd.cpp
+        ./spendcost_partd
+        rm spendcost_partd
     fi
 }
 
